@@ -1,0 +1,9 @@
+{
+    "name": "Bike Project",
+    "short_name": "Bike Project",
+    "start_url": "",
+    "display": "standalone",
+    "background_color": "#FFE9D2",
+    "theme_color": "#FFE1C4",
+    "orientation": "portrait-primary"
+}
