@@ -9,7 +9,122 @@
     <link rel="manifest" href="/manifest.json">
 </head>
 <body>
-    <button>Start</button>
+  <h1>Device Tracker</h1>
+  <p>Click the button below to start:</p>
+  <button onclick="startProcesses()">Start</button>
+  <div id="coordinates"></div>
+  <div id="timestamp"></div>
+
+  <ul id="OrientationData">
+        <li>Alpha: <span id="alpha">---</span></li>
+        <li>Beta: <span id="beta">---</span></li>
+        <li>Gamma: <span id="gamma">---</span></li>
+    </ul>
+
+    <ul id="MotionData">
+      <li>Acceleration: <span id="Acceleration">---</span></li>
+      <li>Rotation: <span id="Rotation">---</span></li>
+      <li>Interval: <span id="Interval">---</span></li>
+  </ul>
+
+
+  <script>
+
+      //Starts the location, orientation, and motion scripts  
+      function startProcesses(){ 
+        setInterval(getLocation,1000);
+        requestMotionPermission();
+        requestOrientationPermission();
+        
+      }
+
+      function getLocation() {
+          if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(showPosition, showError);
+          } else {
+              alert("Geolocation is not supported by this browser.");
+          }
+      }
+
+      //Shows the position and current time in lat/long 
+      function showPosition(position) {
+          var latitude = position.coords.latitude;
+          var longitude = position.coords.longitude;
+          document.getElementById("coordinates").innerHTML = "Latitude: " + latitude + "<br>Longitude: " + longitude;
+          const currentDate = new Date();
+          var second = currentDate.getSeconds();
+          var minute = currentDate.getMinutes();
+          var hour = currentDate.getHours();
+          document.getElementById("timestamp").innerHTML = "Time: "+hour+":"+minute+":"+second;
+
+      
+      }
+
+      function showError(error) {
+          switch(error.code) {
+              case error.PERMISSION_DENIED:
+                  alert("User denied the request for Geolocation.");
+                  break;
+              case error.POSITION_UNAVAILABLE:
+                  alert("Location information is unavailable.");
+                  break;
+              case error.TIMEOUT:
+                  alert("The request to get user location timed out.");
+                  break;
+              case error.UNKNOWN_ERROR:
+                  alert("An unknown error occurred.");
+                  break;
+          }
+      }
+
+      function requestOrientationPermission() {
+            DeviceOrientationEvent.requestPermission()
+                .then(response => {
+                    if (response == 'granted') {
+                        window.addEventListener('deviceorientation', handleOrientation);
+                    } else {
+                        alert('Permission denied to access magnetometer data.');
+                    }
+                })
+                .catch(console.error);
+        }
+
+        function handleOrientation(event) {
+            var alpha = event.alpha; // Z-axis rotation [0, 360]
+            var beta = event.beta;   // X-axis rotation [-180, 180]
+            var gamma = event.gamma; // Y-axis rotation [-90, 90]
+
+            // Update the HTML with magnetometer data
+            document.getElementById('alpha').textContent = alpha.toFixed(2) + "°";
+            document.getElementById('beta').textContent = beta.toFixed(2) + "°";
+            document.getElementById('gamma').textContent = gamma.toFixed(2) + "°";
+        }
+
+        function requestMotionPermission() {
+          DeviceMotionEvent.requestPermission()
+                .then(response => {
+                    if (response == 'granted') {
+                        window.addEventListener('devicemotion', handleMotion);
+                    } else {
+                        alert('Permission denied to access magnetometer data.');
+                    }
+                })
+                .catch(console.error);
+        }
+
+        function handleMotion(event) {
+            var acceleration = Math.sqrt(event.acceleration.x**2+event.acceleration.y**2+event.acceleration.z**2);
+            var rotation = Math.sqrt(event.rotationRate.alpha**2+event.rotationRate.beta**2+event.rotationRate.gamma**2);   
+            var interval = event.interval;
+
+            // 
+            document.getElementById('Acceleration').textContent = acceleration.toFixed(3) + "m/s2";
+            document.getElementById('Rotation').textContent = rotation.alpha.toFixed(3) + "°/s";
+            document.getElementById('Interval').textContent = interval.toFixed(3) + "ms";
+        }
+
+        
+  </script>
     <script>
         window.addEventListener('load', () => {
           registerSW();
